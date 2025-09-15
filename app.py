@@ -9,10 +9,10 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-@app.route('/ocr', methods=['POST'])
-def ocr_route():
-    if 'receipt' not in request.files or 'amount' not in request.form:
-        return jsonify({'error': 'Eksik alan'}), 400
+@app.route("/")
+def home():
+    return render_template("index.html")
+
 
     file = request.files['receipt']
     amount = request.form.get('amount')
