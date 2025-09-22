@@ -1,14 +1,628 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <title>OCR Test</title>
-</head>
-<body>
-  <h2>OCR Test Formu</h2>
-  <form action="/ocr" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" required />
-    <button type="submit">Yükle ve Tara</button>
-  </form>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block head_extra %}
+<style>
+    .hero {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: clamp(24px, 4vw, 36px);
+        margin-bottom: clamp(36px, 5vw, 60px);
+        align-items: center;
+    }
+
+    .hero-copy h1 {
+        font-size: clamp(2.6rem, 4vw, 3.6rem);
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.015em;
+        margin-bottom: 18px;
+        background: linear-gradient(120deg, #60a5fa, #a855f7, #f97316);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: title-fade 1s ease forwards;
+    }
+
+    @keyframes title-fade {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-copy p {
+        color: var(--text-secondary);
+        font-size: 1.05rem;
+        line-height: 1.7;
+        margin-bottom: 26px;
+    }
+
+    .cta-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .secondary-link {
+        padding: 12px 18px;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: border-color 0.25s ease, color 0.25s ease;
+    }
+
+    .secondary-link:hover {
+        border-color: rgba(148, 163, 184, 0.7);
+        color: #e2e8f0;
+    }
+
+    .hero-metrics {
+        display: grid;
+        gap: 14px;
+    }
+
+    .metric-card {
+        background: rgba(15, 23, 42, 0.62);
+        border-radius: 22px;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        padding: 20px 24px;
+        backdrop-filter: blur(20px);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .metric-card span:first-child {
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+    }
+
+    .metric-card strong {
+        font-size: 1.6rem;
+        font-weight: 700;
+    }
+
+    .pipeline-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 36px;
+    }
+
+    .pipeline-step {
+        padding: 20px;
+        border-radius: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(18px);
+        display: grid;
+        gap: 10px;
+        min-height: 160px;
+    }
+
+    .pipeline-step .step-index {
+        width: 36px;
+        height: 36px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.5), rgba(129, 140, 248, 0.65));
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+    }
+
+    .pipeline-step h3 {
+        font-size: 1.05rem;
+        font-weight: 600;
+    }
+
+    .upload-section {
+        display: grid;
+        gap: 26px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 18px;
+        align-items: start;
+    }
+
+    .input-group label {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: rgba(15, 23, 42, 0.65);
+        color: #e2e8f0;
+        font-size: 1rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .input-group input:focus {
+        outline: none;
+        border-color: rgba(56, 189, 248, 0.75);
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+    }
+
+    .dropzone {
+        position: relative;
+        border: 2px dashed rgba(148, 163, 184, 0.45);
+        border-radius: 22px;
+        padding: 36px;
+        text-align: center;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(16px);
+        transition: border-color 0.25s ease, background 0.25s ease;
+        cursor: pointer;
+    }
+
+    .dropzone.is-dragover {
+        border-color: rgba(56, 189, 248, 0.9);
+        background: rgba(37, 99, 235, 0.2);
+    }
+
+    .dropzone-icon {
+        font-size: 2.4rem;
+        margin-bottom: 14px;
+    }
+
+    .primary-btn {
+        border: none;
+        border-radius: 16px;
+        padding: 16px 24px;
+        background: linear-gradient(135deg, #38bdf8, #2563eb);
+        color: #0f172a;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .primary-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 28px 60px rgba(37, 99, 235, 0.35);
+    }
+
+    .status-card {
+        display: none;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .status-card.active {
+        display: flex;
+    }
+
+    .status-timeline {
+        display: grid;
+        gap: 12px;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: rgba(15, 23, 42, 0.55);
+    }
+
+    .timeline-item.active {
+        border-color: rgba(56, 189, 248, 0.65);
+        background: rgba(37, 99, 235, 0.25);
+    }
+
+    .timeline-item.error {
+        border-color: rgba(248, 113, 113, 0.7);
+        background: rgba(127, 29, 29, 0.35);
+    }
+
+    .status-body {
+        padding: 16px 18px;
+        border-radius: 16px;
+        background: rgba(15, 23, 42, 0.55);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .status-body pre {
+        white-space: pre-wrap;
+        color: #e2e8f0;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .jobs-grid {
+        margin-top: 40px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 18px;
+    }
+
+    .job-card {
+        padding: 20px;
+        border-radius: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: rgba(15, 23, 42, 0.55);
+        display: grid;
+        gap: 10px;
+    }
+
+    .job-card a {
+        color: #38bdf8;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .tech-stack {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 34px;
+    }
+
+    .tech-tile {
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(15, 23, 42, 0.5);
+        display: grid;
+        gap: 6px;
+    }
+
+    @media (max-width: 720px) {
+        .hero-copy h1 { font-size: clamp(2.2rem, 6vw, 2.8rem); }
+        .dropzone { padding: 26px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-copy">
+        <div class="badges">
+            <span class="badge badge-info">Yeni Nesil Platform</span>
+            <span class="badge badge-success">Uçtan Uca Otomasyon</span>
+        </div>
+        <h1>Belgelerinizi saniyeler içinde çözümler, WhatsApp'ınıza ulaştırır.</h1>
+        <p>
+            ARK OCR Platformu; gelişmiş optik karakter tanıma, OpenAI destekli metin analizleri
+            ve WhatsApp Business entegrasyonunu tek akışta birleştirir. Belgelerinizi yükleyin,
+            kalan her şey otomatik gerçekleşsin.
+        </p>
+        <div class="cta-group">
+            <a class="primary-link" href="#upload">Hemen İşlem Başlat</a>
+            <a class="secondary-link" href="#platform">Platform Detayları</a>
+        </div>
+    </div>
+    <div class="hero-metrics">
+        <div class="metric-card">
+            <span>Aktif İş Akışı</span>
+            <strong>OCR → AI → WhatsApp</strong>
+            <small>Belgeleriniz saniyeler içinde özetlenir ve size bildirilir.</small>
+        </div>
+        <div class="metric-card">
+            <span>Canlı İşlem Takibi</span>
+            <strong>Gerçek Zamanlı</strong>
+            <small>Durum adımları eş zamanlı olarak bu sayfada görüntülenir.</small>
+        </div>
+        <div class="metric-card">
+            <span>Güvenli Saklama</span>
+            <strong>Şifreli İşlem</strong>
+            <small>API anahtarları ve dosyalar güvenli şekilde yönetilir.</small>
+        </div>
+    </div>
+</section>
+
+<section id="upload" class="glass-card upload-section">
+    <div>
+        <div class="badges">
+            <span class="badge badge-info">1</span>
+            <span class="badge">Dosya Yükleyin</span>
+        </div>
+        <h2 style="margin-top:14px; font-size: 1.8rem; font-weight: 700;">Belgenizi bırakın, gerisini otomasyona bırakın.</h2>
+        <p style="color: var(--text-secondary); margin-top: 8px;">
+            PDF, JPG veya PNG formatındaki belgelerinizi yükleyin. OCR işlemi sonrasında
+            OpenAI ile özetlenecek ve sonuç otomatik olarak WhatsApp üzerinden gönderilecektir.
+        </p>
+    </div>
+
+    <form id="upload-form" class="form-grid" enctype="multipart/form-data">
+        <div class="input-group">
+            <label for="phone">WhatsApp Numarası</label>
+            <input type="tel" id="phone" name="phone" placeholder="05XXXXXXXXX" required>
+        </div>
+        <div class="input-group" style="grid-column: 1 / -1;">
+            <input type="file" id="file-input" name="file" accept=".pdf,.png,.jpg,.jpeg" hidden required>
+            <div id="dropzone" class="dropzone">
+                <div class="dropzone-icon">📄</div>
+                <strong>Dosyanızı sürükleyip bırakın veya tıklayarak seçin</strong>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
+                    En fazla 20MB • PDF, JPG, PNG desteklenir
+                </p>
+            </div>
+        </div>
+        <button class="primary-btn" type="submit">İşlem Başlat</button>
+    </form>
+
+    <div id="status-card" class="status-card glass-card" style="padding: 24px;">
+        <div>
+            <div class="badges">
+                <span class="badge badge-info">2</span>
+                <span class="badge">Durumu Takip Edin</span>
+            </div>
+            <h3 style="margin-top: 12px; font-size: 1.4rem;">İşlem durumu</h3>
+            <p style="color: var(--text-secondary);">İş adımları tamamlandıkça otomatik güncellenecektir.</p>
+        </div>
+        <div class="status-timeline" id="status-timeline"></div>
+        <div class="status-body" id="status-body" hidden>
+            <h4 style="margin-bottom: 12px;">AI Özeti</h4>
+            <pre id="summary-output"></pre>
+            <div style="margin-top: 12px; display:flex; gap:12px; flex-wrap: wrap;">
+                <span class="badge badge-success" id="whatsapp-status" hidden>WhatsApp bildirimi gönderildi</span>
+                <a id="detail-link" href="#" class="secondary-link" style="display:none;">Detay sayfasını aç</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="platform" class="glass-card" style="margin-top: 48px;">
+    <div class="badges">
+        <span class="badge badge-info">Platform Mimarisİ</span>
+    </div>
+    <h2 style="margin: 16px 0; font-size: 1.7rem;">Uçtan uca otomatikleştirilmiş iş akışı</h2>
+    <p style="color: var(--text-secondary); max-width: 720px;">
+        Ark arkkira.com altyapısıyla inşa edilen yeni nesil platform; dosya yükleme anından sonuç bildirimi
+        anına kadar tüm adımları asenkron olarak yönetir. Kullanıcı beklemek zorunda kalmadan işlem tamamlandığında
+        bilgilendirilir.
+    </p>
+    <div class="pipeline-grid">
+        <div class="pipeline-step">
+            <div class="step-index">1</div>
+            <h3>OCR Motoru</h3>
+            <p>pdf2image + Tesseract ile yüksek doğrulukta metin çıkarımı yapılır.</p>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-index">2</div>
+            <h3>OpenAI Analizi</h3>
+            <p>Extract edilen metin, özel prompt ile OpenAI modelinde işlenir, özetlenir.</p>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-index">3</div>
+            <h3>WhatsApp Bildirimi</h3>
+            <p>Sonuç, WhatsApp Business API kullanılarak kullanıcıya ulaştırılır.</p>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-index">4</div>
+            <h3>Gerçek Zamanlı İzleme</h3>
+            <p>İşlem adımları bu panelde canlı olarak güncellenir ve geçmişe kaydedilir.</p>
+        </div>
+    </div>
+</section>
+
+<section class="glass-card" style="margin-top: 48px;">
+    <div class="badges">
+        <span class="badge badge-info">Teknoloji Katmanları</span>
+    </div>
+    <h2 style="margin: 16px 0; font-size: 1.7rem;">Kritik entegrasyonlarla desteklenen altyapı</h2>
+    <div class="tech-stack">
+        <div class="tech-tile">
+            <strong>Güvenli API Yönetimi</strong>
+            <p style="color: var(--text-secondary);">OpenAI ve WhatsApp anahtarları .env üzerinde saklanır, istemciye aktarılmaz.</p>
+        </div>
+        <div class="tech-tile">
+            <strong>Asenkron İşçi Havuzu</strong>
+            <p style="color: var(--text-secondary);">ThreadPoolExecutor ile eş zamanlı işler, kullanıcı arayüzünü bekletmez.</p>
+        </div>
+        <div class="tech-tile">
+            <strong>Durum Veritabanı</strong>
+            <p style="color: var(--text-secondary);">Her işlem SQL veritabanında kaydedilir; geçmiş ve hatalar raporlanır.</p>
+        </div>
+        <div class="tech-tile">
+            <strong>Gelişmiş UI Deneyimi</strong>
+            <p style="color: var(--text-secondary);">Cam efekti, animasyonlu tipografi ve duyarlı tasarım ile modern deneyim.</p>
+        </div>
+    </div>
+</section>
+
+{% if recent_jobs %}
+<section class="glass-card" style="margin-top: 48px;">
+    <div class="badges">
+        <span class="badge badge-info">Canlı Kayıtlar</span>
+    </div>
+    <h2 style="margin: 16px 0; font-size: 1.6rem;">Son işlemler</h2>
+    <div class="jobs-grid">
+        {% for job in recent_jobs %}
+        <div class="job-card">
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">{{ job.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            <strong>{{ job.original_filename }}</strong>
+            <span class="badge {{ job.status|status_badge }}">{{ job.status.replace('_', ' ').title() }}</span>
+            {% if job.ai_summary %}
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">{{ job.ai_summary[:120] }}{% if job.ai_summary|length > 120 %}…{% endif %}</p>
+            {% endif %}
+            <a href="{{ url_for('job_detail', job_id=job.public_id) }}">Detayı görüntüle →</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const form = document.getElementById('upload-form');
+    const statusCard = document.getElementById('status-card');
+    const statusTimeline = document.getElementById('status-timeline');
+    const statusBody = document.getElementById('status-body');
+    const summaryOutput = document.getElementById('summary-output');
+    const whatsappStatus = document.getElementById('whatsapp-status');
+    const detailLink = document.getElementById('detail-link');
+    const toastContainer = document.getElementById('toast-container');
+
+    let pollInterval = null;
+
+    const statusLabels = {
+        'queued': 'Sıraya alındı',
+        'ocr_processing': 'OCR işlemi devam ediyor',
+        'ai_processing': 'OpenAI analizi yapılıyor',
+        'notifying': 'WhatsApp bildirimi gönderiliyor',
+        'completed': 'Tamamlandı',
+        'error': 'Hata oluştu'
+    };
+
+    const statusOrder = ['queued', 'ocr_processing', 'ai_processing', 'notifying', 'completed'];
+
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    dropzone.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropzone.classList.add('is-dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('is-dragover'));
+    dropzone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('is-dragover');
+        if (event.dataTransfer.files.length) {
+            fileInput.files = event.dataTransfer.files;
+        }
+    });
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        if (!fileInput.files.length) {
+            showToast('Lütfen işlem yapmak için bir dosya seçin.', 'error');
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        try {
+            form.querySelector('button[type="submit"]').disabled = true;
+            form.querySelector('button[type="submit"]').textContent = 'İşlem başlatılıyor…';
+
+            const response = await fetch('{{ url_for('upload') }}', {
+                method: 'POST',
+                body: formData
+            });
+
+            const payload = await response.json();
+
+            if (!response.ok) {
+                showToast(payload.error || 'İşlem başlatılamadı.', 'error');
+                return;
+            }
+
+            showToast('İşlem başlatıldı. Durum birkaç saniye içinde güncellenecek.', 'success');
+            statusCard.classList.add('active');
+            statusTimeline.innerHTML = '';
+            statusBody.hidden = true;
+            whatsappStatus.hidden = true;
+            detailLink.style.display = 'none';
+            summaryOutput.textContent = '';
+
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            pollStatus(payload.job_id, payload.status_url);
+        } catch (error) {
+            console.error(error);
+            showToast('Beklenmeyen bir hata oluştu.', 'error');
+        } finally {
+            form.querySelector('button[type="submit"]').disabled = false;
+            form.querySelector('button[type="submit"]').textContent = 'İşlem Başlat';
+        }
+    });
+
+    function pollStatus(jobId, statusUrl) {
+        updateTimeline('queued');
+        pollInterval = setInterval(async () => {
+            try {
+                const response = await fetch(statusUrl);
+                if (!response.ok) {
+                    throw new Error('Durum alınamadı');
+                }
+                const data = await response.json();
+                renderStatus(jobId, data);
+
+                if (['completed', 'error'].includes(data.status)) {
+                    clearInterval(pollInterval);
+                    pollInterval = null;
+                }
+            } catch (error) {
+                console.error(error);
+                clearInterval(pollInterval);
+                pollInterval = null;
+                showToast('Durum güncellenemedi.', 'error');
+            }
+        }, 3000);
+    }
+
+    function renderStatus(jobId, data) {
+        updateTimeline(data.status);
+
+        if (data.ai_summary || data.status === 'completed' || data.status === 'error') {
+            statusBody.hidden = false;
+            summaryOutput.textContent = data.ai_summary || data.error || '';
+        }
+
+        if (data.whatsapp_message_id) {
+            whatsappStatus.hidden = false;
+        }
+
+        detailLink.href = `{{ url_for('job_detail', job_id='__ID__') }}`.replace('__ID__', jobId);
+        detailLink.style.display = 'inline-flex';
+    }
+
+    function updateTimeline(currentStatus) {
+        statusTimeline.innerHTML = '';
+        const reachedError = currentStatus === 'error';
+
+        statusOrder.forEach((status) => {
+            const item = document.createElement('div');
+            item.className = 'timeline-item';
+
+            if (status === currentStatus) {
+                item.classList.add(reachedError ? 'error' : 'active');
+            }
+
+            if (statusOrder.indexOf(status) < statusOrder.indexOf(currentStatus)) {
+                item.classList.add('active');
+            }
+
+            const label = document.createElement('span');
+            label.textContent = statusLabels[status];
+            item.appendChild(label);
+            statusTimeline.appendChild(item);
+        });
+
+        if (reachedError) {
+            const item = document.createElement('div');
+            item.className = 'timeline-item error';
+            item.textContent = statusLabels['error'];
+            statusTimeline.appendChild(item);
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        if (!toastContainer) return;
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type === 'error' ? 'error' : 'success'}`;
+        toast.textContent = message;
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+</script>
+{% endblock %}

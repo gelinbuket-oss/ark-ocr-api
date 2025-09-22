@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<style>
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+    }
+
+    .detail-card {
+        padding: 24px;
+        border-radius: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(15, 23, 42, 0.55);
+        display: grid;
+        gap: 10px;
+        backdrop-filter: blur(20px);
+    }
+
+    .detail-card strong {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .detail-card span {
+        font-size: 1.05rem;
+        font-weight: 600;
+    }
+
+    .summary-box {
+        margin-top: 28px;
+        padding: 24px;
+        border-radius: 22px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: rgba(15, 23, 42, 0.55);
+    }
+
+    .summary-box pre {
+        margin-top: 14px;
+        white-space: pre-wrap;
+        font-family: 'Inter', sans-serif;
+        line-height: 1.7;
+        color: #e2e8f0;
+    }
+
+    .timeline-list {
+        margin-top: 20px;
+        display: grid;
+        gap: 12px;
+    }
+
+    .timeline-list li {
+        list-style: none;
+        padding: 14px 18px;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: rgba(15, 23, 42, 0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="margin-bottom: 36px;">
+    <div class="badges">
+        <span class="badge badge-info">İşlem Detayı</span>
+    </div>
+    <h1 style="margin: 18px 0; font-size: 2rem;">{{ job.original_filename }}</h1>
+    <p style="color: var(--text-secondary);">{{ job.created_at.strftime('%d.%m.%Y %H:%M') }} tarihinde oluşturuldu.</p>
+
+    <div class="detail-grid" style="margin-top: 24px;">
+        <div class="detail-card">
+            <strong>Durum</strong>
+            <span class="badge {{ job.status|status_badge }}">{{ job.status.replace('_', ' ').title() }}</span>
+        </div>
+        <div class="detail-card">
+            <strong>Telefon</strong>
+            <span>{{ job.phone_number }}</span>
+        </div>
+        <div class="detail-card">
+            <strong>İşlem Kimliği</strong>
+            <span>{{ job.public_id }}</span>
+        </div>
+        <div class="detail-card">
+            <strong>Tamamlanma</strong>
+            <span>{% if job.completed_at %}{{ job.completed_at.strftime('%d.%m.%Y %H:%M') }}{% else %}Bekleniyor{% endif %}</span>
+        </div>
+    </div>
+
+    <div class="timeline-list">
+        <li><strong>1. OCR</strong> – {% if job.ocr_text %}Tamamlandı{% else %}Bekleniyor{% endif %}</li>
+        <li><strong>2. OpenAI</strong> – {% if job.ai_summary %}Tamamlandı{% else %}Bekleniyor{% endif %}</li>
+        <li><strong>3. WhatsApp</strong> – {% if job.whatsapp_message_id %}Mesaj gönderildi{% else %}Bekleniyor{% endif %}</li>
+    </div>
+
+    {% if job.ai_summary or job.error_message %}
+    <div class="summary-box">
+        <div class="badges">
+            <span class="badge badge-info">AI Özeti</span>
+        </div>
+        <pre>{{ job.ai_summary or job.error_message }}</pre>
+    </div>
+    {% endif %}
+
+    {% if job.ocr_text %}
+    <div class="summary-box" style="margin-top: 24px;">
+        <div class="badges">
+            <span class="badge badge-info">OCR Çıktısı</span>
+        </div>
+        <pre>{{ job.ocr_text }}</pre>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

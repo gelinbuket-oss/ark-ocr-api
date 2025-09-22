@@ -1,4 +1,8 @@
 Flask
+Flask-SQLAlchemy
+python-dotenv
+openai>=0.27.8
+requests
 pytesseract
 pillow
 pdf2image
