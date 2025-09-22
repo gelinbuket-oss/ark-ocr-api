@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ARK OCR Platformu{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-start: #0f172a;
+            --bg-mid: #1d4ed8;
+            --bg-end: #7c3aed;
+            --surface: rgba(255, 255, 255, 0.08);
+            --surface-strong: rgba(15, 23, 42, 0.65);
+            --border: rgba(148, 163, 184, 0.35);
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --success: #10b981;
+            --warning: #f97316;
+            --danger: #ef4444;
+            --shadow: 0 40px 120px rgba(15, 23, 42, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.12), transparent 60%),
+                        radial-gradient(circle at 80% 0%, rgba(192, 132, 252, 0.18), transparent 55%),
+                        linear-gradient(135deg, var(--bg-start), var(--bg-mid), var(--bg-end));
+            color: var(--text-primary);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 0% 100%, rgba(14, 165, 233, 0.12), transparent 45%),
+                        radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.1), transparent 50%);
+            opacity: 0.9;
+            animation: aurora 20s ease-in-out infinite alternate;
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+            opacity: 0.35;
+            z-index: -1;
+        }
+
+        @keyframes aurora {
+            0% { transform: translate3d(-2%, -1%, 0) scale(1.02); filter: hue-rotate(0deg); }
+            100% { transform: translate3d(2%, 1%, 0) scale(1.05); filter: hue-rotate(20deg); }
+        }
+
+        header.site-header {
+            width: min(1200px, 94vw);
+            margin: 40px auto 0;
+            padding: 18px 24px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            box-shadow: var(--shadow);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.85), rgba(129, 140, 248, 0.95));
+            display: grid;
+            place-items: center;
+            font-size: 26px;
+            color: white;
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.45);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .brand-text span:first-child {
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .brand-text span:last-child {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .header-stats {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .header-pill {
+            padding: 10px 18px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .header-pill strong {
+            color: #f8fafc;
+        }
+
+        .primary-link {
+            padding: 12px 18px;
+            border-radius: 16px;
+            text-decoration: none;
+            color: #0f172a;
+            font-weight: 600;
+            background: linear-gradient(135deg, #38bdf8, #a855f7);
+            box-shadow: 0 20px 40px rgba(56, 189, 248, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .primary-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 32px 60px rgba(56, 189, 248, 0.45);
+        }
+
+        main.page-content {
+            width: min(1200px, 94vw);
+            margin: 30px auto 80px;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 28px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            box-shadow: var(--shadow);
+            padding: clamp(24px, 3vw, 42px);
+            backdrop-filter: blur(22px);
+        }
+
+        .badges {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            background: rgba(15, 23, 42, 0.75);
+            color: var(--text-secondary);
+        }
+
+        .badge-success { color: #34d399; border-color: rgba(52, 211, 153, 0.35); }
+        .badge-info { color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); }
+        .badge-warning { color: #fb923c; border-color: rgba(251, 146, 60, 0.35); }
+        .badge-danger { color: #f87171; border-color: rgba(248, 113, 113, 0.35); }
+        .badge-neutral { color: var(--text-secondary); border-color: rgba(148, 163, 184, 0.25); }
+
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 40;
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            padding: 16px 20px;
+            border-radius: 18px;
+            color: var(--text-primary);
+            min-width: 280px;
+            backdrop-filter: blur(18px);
+            box-shadow: 0 20px 48px rgba(15, 23, 42, 0.45);
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .toast.toast-error { border-color: rgba(248, 113, 113, 0.45); }
+        .toast.toast-success { border-color: rgba(52, 211, 153, 0.45); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer.site-footer {
+            width: min(1200px, 94vw);
+            margin: 0 auto 48px;
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+        }
+
+        footer.site-footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        @media (max-width: 960px) {
+            header.site-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 20px;
+            }
+
+            .header-stats {
+                justify-content: space-between;
+            }
+        }
+
+        @media (max-width: 640px) {
+            header.site-header {
+                margin-top: 24px;
+                padding: 16px;
+            }
+
+            .glass-card {
+                padding: 24px;
+            }
+
+            .header-stats {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            footer.site-footer {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+        }
+
+        {% block head_extra %}{% endblock %}
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toast-container"></div>
+
+    <header class="site-header">
+        <div class="brand">
+            <div class="brand-logo">ARK</div>
+            <div class="brand-text">
+                <span>ARK OCR Platformu</span>
+                <span>OCR → Yapay Zeka → WhatsApp otomasyonu</span>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="header-pill">Toplam İşlem: <strong>{{ total_jobs }}</strong></div>
+            <div class="header-pill">Tamamlanan: <strong>{{ completed_jobs }}</strong></div>
+            <a class="primary-link" href="#upload">Dosya Yükle</a>
+        </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="toast-container">
+                {% for category, message in messages %}
+                    <div class="toast toast-{{ 'error' if category == 'error' else 'success' }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="page-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <span>© {{ datetime.utcnow().year }} ARK Kira Ödeme Sistemleri. Tüm hakları saklıdır.</span>
+        <span>OCR • OpenAI • WhatsApp Business entegrasyonu</span>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
